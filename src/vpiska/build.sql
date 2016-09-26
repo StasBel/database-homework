@@ -1,4 +1,5 @@
 /* task №1 */
+DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
   user_id SERIAL PRIMARY KEY,
   name    VARCHAR(35)  NOT NULL,
@@ -7,6 +8,7 @@ CREATE TABLE users (
   phone   VARCHAR(16)  NOT NULL
 );
 
+DROP TABLE IF EXISTS users_extra CASCADE;
 CREATE TABLE users_extra (
   user_id       SERIAL REFERENCES users (user_id) ON DELETE CASCADE,
   sex           BIT,
@@ -14,11 +16,13 @@ CREATE TABLE users_extra (
   photo         BYTEA
 );
 
+DROP TABLE IF EXISTS country_to_fee CASCADE;
 CREATE TABLE country_to_fee (
   name        VARCHAR(52) PRIMARY KEY,
   fee_percent FLOAT NOT NULL
 );
 
+DROP TABLE IF EXISTS houses CASCADE;
 CREATE TABLE houses (
   house_id      SERIAL PRIMARY KEY,
   country_name  VARCHAR(52) REFERENCES country_to_fee (name) ON DELETE CASCADE,
@@ -33,6 +37,7 @@ CREATE TABLE houses (
   CHECK (gps_longitude >= -180 AND gps_longitude <= 180)
 );
 
+DROP TABLE IF EXISTS houses_gps CASCADE;
 CREATE TABLE houses_gps (
   gps_longitude FLOAT NOT NULL,
   gps_latitude  FLOAT NOT NULL,
@@ -42,6 +47,7 @@ CREATE TABLE houses_gps (
   CHECK (gps_longitude >= -180 AND gps_longitude <= 180)
 );
 
+DROP TABLE IF EXISTS houses_extra CASCADE;
 CREATE TABLE houses_extra (
   house_id        SERIAL REFERENCES houses (house_id) ON DELETE CASCADE,
   wi_fi           BIT,
@@ -51,12 +57,14 @@ CREATE TABLE houses_extra (
   smoking_free    BIT
 );
 
+DROP TABLE IF EXISTS houses_prices CASCADE;
 CREATE TABLE houses_prices (
   house_id       SERIAL REFERENCES houses (house_id) ON DELETE CASCADE,
   prices         MONEY [53] NOT NULL,
   cleaning_price MONEY
 );
 
+DROP TABLE IF EXISTS applications CASCADE;
 CREATE TABLE applications (
   application_id   SERIAL PRIMARY KEY,
   date_begin       DATE    NOT NULL,
@@ -68,12 +76,14 @@ CREATE TABLE applications (
   user_id          SERIAL REFERENCES users (user_id) ON DELETE CASCADE
 );
 
+DROP TABLE IF EXISTS applications_for_user CASCADE;
 CREATE TABLE applications_for_user (
   user_id        SERIAL REFERENCES users (user_id) ON DELETE CASCADE,
   application_id SERIAL REFERENCES applications (application_id) ON DELETE CASCADE,
   PRIMARY KEY (user_id, application_id)
 );
 
+DROP TABLE IF EXISTS applications_for_host CASCADE;
 CREATE TABLE applications_for_host (
   house_id       SERIAL REFERENCES houses (house_id) ON DELETE CASCADE,
   application_id SERIAL REFERENCES applications (application_id) ON DELETE CASCADE,
@@ -81,6 +91,7 @@ CREATE TABLE applications_for_host (
 );
 
 /* task №2 */
+DROP TABLE IF EXISTS user_comments CASCADE;
 CREATE TABLE user_comments (
   comment_id               SERIAL,
   house_id                 SERIAL REFERENCES houses (house_id) ON DELETE CASCADE,
@@ -94,6 +105,7 @@ CREATE TABLE user_comments (
   CHECK (host_friendliness_rate >= 1 AND host_friendliness_rate <= 5)
 );
 
+DROP TABLE IF EXISTS host_comments CASCADE;
 CREATE TABLE host_comments (
   comment_id   SERIAL,
   user_id      SERIAL REFERENCES users (user_id) ON DELETE CASCADE,
@@ -104,8 +116,10 @@ CREATE TABLE host_comments (
 );
 
 /* task №3 */
+DROP TYPE IF EXISTS genre;
 CREATE TYPE genre AS ENUM ('beach', 'festival', 'sport');
 
+DROP TABLE IF EXISTS entertainmets CASCADE;
 CREATE TABLE entertainmets (
   entertainmet_id SERIAL,
   gps_longitude   FLOAT        NOT NULL,
