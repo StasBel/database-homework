@@ -9,6 +9,7 @@ DOCKER_SRC=/DBsrc
 SRC=`pwd`/src
 INIT_SQL=init.sql
 DROP_SQL=drop.sql
+DBNAME=vpiska
 
 function print_usage() {
 	echo ""
@@ -80,8 +81,12 @@ function psql_rebuild_db() {
 	if [ -n "$3" ];then
 		cont=$3
 	fi
-	docker run -v $SRC:$DOCKER_SRC -it --rm --link \
-	$cont:$POSTGRES_CONT postgres psql -h postgres -U $1  -c "\i $DOCKER_SRC/$2"
+	
+	CMD="docker run -v `pwd`:$DOCKER_SRC -it --rm --link $cont:$POSTGRES_CONT postgres psql -h postgres -U $1"
+	
+	$CMD -c "\i $DOCKER_SRC/drop.sql"
+	$CMD -c "\i $DOCKER_SRC/init.sql"
+	$CMD -d $DBNAME -c "\i $DOCKER_SRC/src/$2"
 }
 
 if [ $# -eq 0 ]; then
