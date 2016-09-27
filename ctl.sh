@@ -6,10 +6,11 @@ POSTGRES_CONT=postgres
 DEFAULT_PASS=password
 DOCKERFILE=./Dockerfile
 DOCKER_SRC=/DBsrc
-SRC=`pwd`/src
+WORK_DIR=`pwd`
 INIT_SQL=init.sql
 DROP_SQL=drop.sql
 DBNAME=vpiska
+REBUILD_INSIDE=rebuild_db_inside.sh
 
 function print_usage() {
 	echo ""
@@ -24,7 +25,7 @@ function create_cnt() {
 	if [ -n "$2" ];then
 		password=$2
 	fi
-	docker run --name $cont -e POSTGRES_PASSWORD=$password -d $IMAGE
+	docker run -v $WORK_DIR:$DOCKER_SRC --name $cont -e POSTGRES_PASSWORD=$password -d $IMAGE
 }
 
 function start_cnt() {
@@ -68,25 +69,22 @@ function psql-cmd() {
 	if [ -n "$2" ];then
 		cont=$2
 	fi
-	docker run -v $SRC:$DOCKER_SRC -it --rm --link $cont:$POSTGRES_CONT postgres psql -h postgres -U "$1"
+	docker exec -it $cont psql -U $1
 }
 
 function psql_rebuild_db() {
-	if [ $# -lt 2 ]
+	if [ $# -lt 1 ]
 	  then
-	    echo "please, provide username and reload script"
+	    echo "please, provide reload script"
 	    exit
 	fi
 	local cont=$CONT
-	if [ -n "$3" ];then
-		cont=$3
+	if [ -n "$2" ];then
+		cont=$2
 	fi
 	
-	CMD="docker run -v `pwd`:$DOCKER_SRC -it --rm --link $cont:$POSTGRES_CONT postgres psql -h postgres -U $1"
-	
-	$CMD -c "\i $DOCKER_SRC/drop.sql"
-	$CMD -c "\i $DOCKER_SRC/init.sql"
-	$CMD -d $DBNAME -c "\i $DOCKER_SRC/src/$2"
+	docker exec $cont $DOCKER_SRC/$REBUILD_INSIDE $DOCKER_SRC/$DROP_SQL $DOCKER_SRC/$INIT_SQL $DBNAME \
+	$DOCKER_SRC/$1
 }
 
 if [ $# -eq 0 ]; then
@@ -117,7 +115,7 @@ psql-cmd):
 	psql-cmd $2 $3
 	;;
 psql-rebuild-db):
-	psql_rebuild_db $2 $3 $4
+	psql_rebuild_db $2 $3
 	;;
 *)
 	;;
