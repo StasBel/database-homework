@@ -69,7 +69,7 @@ function psql-cmd() {
 	if [ -n "$2" ];then
 		cont=$2
 	fi
-	docker exec -it $cont psql -U $1
+	docker exec -it $cont psql -U $1 -d $DBNAME
 }
 
 function psql_rebuild_db() {
