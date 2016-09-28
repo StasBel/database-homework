@@ -1,3 +1,6 @@
+-- DROP EXTENSION IF EXISTS postgis;
+-- CREATE EXTENSION IF NOT EXISTS postgis;
+
 /* task №1 */
 DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
@@ -18,34 +21,27 @@ CREATE TABLE users_extra (
 
 DROP TABLE IF EXISTS country_to_fee CASCADE;
 CREATE TABLE country_to_fee (
-  name        VARCHAR(52) PRIMARY KEY,
+  country_id  SERIAL PRIMARY KEY,
+  name        VARCHAR(52),
   fee_percent FLOAT NOT NULL
 );
+CREATE UNIQUE INDEX IF NOT EXISTS country_name_to_id_fast
+  ON country_to_fee USING BTREE (name);
 
 DROP TABLE IF EXISTS houses CASCADE;
 CREATE TABLE houses (
   house_id      SERIAL PRIMARY KEY,
-  country_name  VARCHAR(52) REFERENCES country_to_fee (name) ON DELETE CASCADE,
+  country_id    SERIAL REFERENCES country_to_fee (country_id) ON DELETE CASCADE,
   address_extra VARCHAR(100) NOT NULL,
-  house_name    VARCHAR(52)  NOT NULL,
+  house_name    VARCHAR(100) NOT NULL,
   rooms_number  SMALLINT     NOT NULL CHECK (rooms_number >= 0),
   beds_number   SMALLINT     NOT NULL CHECK (beds_number >= 0),
   max_residents SMALLINT     NOT NULL CHECK (beds_number >= 0),
-  gps_longitude FLOAT        NOT NULL,
-  gps_latitude  FLOAT        NOT NULL,
-  CHECK (gps_latitude >= -90 AND gps_latitude <= 90),
-  CHECK (gps_longitude >= -180 AND gps_longitude <= 180)
+  gps_longitude FLOAT        NOT NULL CHECK (gps_latitude >= -90 AND gps_latitude <= 90),
+  gps_latitude  FLOAT        NOT NULL CHECK (gps_longitude >= -180 AND gps_longitude <= 180)
 );
-
-DROP TABLE IF EXISTS houses_gps CASCADE;
-CREATE TABLE houses_gps (
-  gps_longitude FLOAT NOT NULL,
-  gps_latitude  FLOAT NOT NULL,
-  house_id      SERIAL REFERENCES houses (house_id) ON DELETE CASCADE,
-  PRIMARY KEY (gps_longitude, gps_latitude, house_id),
-  CHECK (gps_latitude >= -90 AND gps_latitude <= 90),
-  CHECK (gps_longitude >= -180 AND gps_longitude <= 180)
-);
+CREATE INDEX IF NOT EXISTS country_gps_fast
+  ON houses USING BTREE (gps_longitude, gps_latitude);
 
 DROP TABLE IF EXISTS houses_extra CASCADE;
 CREATE TABLE houses_extra (
@@ -75,60 +71,47 @@ CREATE TABLE applications (
   house_id         SERIAL REFERENCES houses (house_id) ON DELETE CASCADE,
   user_id          SERIAL REFERENCES users (user_id) ON DELETE CASCADE
 );
-
-DROP TABLE IF EXISTS applications_for_user CASCADE;
-CREATE TABLE applications_for_user (
-  user_id        SERIAL REFERENCES users (user_id) ON DELETE CASCADE,
-  application_id SERIAL REFERENCES applications (application_id) ON DELETE CASCADE,
-  PRIMARY KEY (user_id, application_id)
-);
-
-DROP TABLE IF EXISTS applications_for_host CASCADE;
-CREATE TABLE applications_for_host (
-  house_id       SERIAL REFERENCES houses (house_id) ON DELETE CASCADE,
-  application_id SERIAL REFERENCES applications (application_id) ON DELETE CASCADE,
-  PRIMARY KEY (house_id, application_id)
-);
+CREATE INDEX IF NOT EXISTS applications_for_user_fast
+  ON applications USING BTREE (user_id);
+CREATE INDEX IF NOT EXISTS applications_for_house_fast
+  ON applications USING BTREE (house_id);
 
 /* task №2 */
 DROP TABLE IF EXISTS user_comments CASCADE;
 CREATE TABLE user_comments (
-  comment_id               SERIAL,
+  comment_id               SERIAL PRIMARY KEY,
   house_id                 SERIAL REFERENCES houses (house_id) ON DELETE CASCADE,
-  PRIMARY KEY (house_id, comment_id),
   comment_text             VARCHAR(1000) NOT NULL,
-  convenient_location_rate SMALLINT      NOT NULL,
-  CHECK (convenient_location_rate >= 1 AND convenient_location_rate <= 5),
-  cleanliness_rate         SMALLINT      NOT NULL,
-  CHECK (cleanliness_rate >= 1 AND cleanliness_rate <= 5),
-  host_friendliness_rate   SMALLINT      NOT NULL,
-  CHECK (host_friendliness_rate >= 1 AND host_friendliness_rate <= 5)
+  convenient_location_rate SMALLINT      NOT NULL CHECK (convenient_location_rate IN (1, 2, 3, 4, 5)),
+  cleanliness_rate         SMALLINT      NOT NULL CHECK (cleanliness_rate IN (1, 2, 3, 4, 5)),
+  friendliness_rate        SMALLINT      NOT NULL CHECK (friendliness_rate IN (1, 2, 3, 4, 5))
 );
+CREATE INDEX IF NOT EXISTS comments_for_house_fast
+  ON user_comments USING BTREE (house_id);
 
 DROP TABLE IF EXISTS host_comments CASCADE;
 CREATE TABLE host_comments (
-  comment_id   SERIAL,
+  comment_id   SERIAL PRIMARY KEY,
   user_id      SERIAL REFERENCES users (user_id) ON DELETE CASCADE,
-  PRIMARY KEY (user_id, comment_id),
   comment_text VARCHAR(1000) NOT NULL,
-  rate         SMALLINT      NOT NULL,
-  CHECK (rate >= 1 AND rate <= 5)
+  rate         SMALLINT      NOT NULL CHECK (rate IN (1, 2, 3, 4, 5))
 );
+CREATE INDEX IF NOT EXISTS comments_for_user_fast
+  ON host_comments USING BTREE (user_id);
 
 /* task №3 */
-DROP TYPE IF EXISTS genre;
-CREATE TYPE genre AS ENUM ('beach', 'festival', 'sport');
+DROP TYPE IF EXISTS GENRE CASCADE;
+CREATE TYPE GENRE AS ENUM ('beach', 'festival', 'sport');
 
 DROP TABLE IF EXISTS entertainmets CASCADE;
 CREATE TABLE entertainmets (
-  entertainmet_id SERIAL,
-  gps_longitude   FLOAT        NOT NULL,
-  gps_latitude    FLOAT        NOT NULL,
-  PRIMARY KEY (gps_longitude, gps_latitude, entertainmet_id),
+  entertainmet_id SERIAL PRIMARY KEY,
   name            VARCHAR(100) NOT NULL,
   time_begin      TIMESTAMP    NOT NULL,
   time_end        TIMESTAMP    NOT NULL,
-  genre           genre        NOT NULL,
-  CHECK (gps_latitude >= -90 AND gps_latitude <= 90),
-  CHECK (gps_longitude >= -180 AND gps_longitude <= 180)
+  genre           GENRE        NOT NULL,
+  gps_longitude   FLOAT        NOT NULL CHECK (gps_latitude >= -90 AND gps_latitude <= 90),
+  gps_latitude    FLOAT        NOT NULL CHECK (gps_longitude >= -180 AND gps_longitude <= 180)
 );
+CREATE INDEX IF NOT EXISTS entertainmets_gps_fast
+  ON entertainmets USING BTREE (gps_longitude, gps_latitude);
