@@ -13,7 +13,7 @@ DBNAME=vpiska
 REBUILD_INSIDE=rebuild_db_inside.sh
 
 function print_usage() {
-	echo "Type 'less ./ctl.sh'"
+	echo ""
 }
 
 function create_cnt() {
