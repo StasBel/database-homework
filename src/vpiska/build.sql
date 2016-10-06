@@ -40,7 +40,7 @@ CREATE TABLE Houses (
   max_residents SMALLINT     NOT NULL CHECK (beds_number >= 0),
   gps_longitude FLOAT        NOT NULL CHECK (gps_latitude >= -90 AND gps_latitude <= 90),
   gps_latitude  FLOAT        NOT NULL CHECK (gps_longitude >= -180 AND gps_longitude <= 180),
-  UNIQUE (country_id, gps_latitude, gps_longitude, house_name)
+  UNIQUE (gps_latitude, gps_longitude, house_name)
 );
 
 DROP TABLE IF EXISTS Hosts CASCADE;
