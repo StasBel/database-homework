@@ -29,9 +29,16 @@ CREATE TABLE CountryFee (
   fee_percent FLOAT       NOT NULL CHECK (fee_percent >= 0)
 );
 
+DROP TABLE IF EXISTS Hosts CASCADE;
+CREATE TABLE Hosts (
+  id   SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE
+);
+
 DROP TABLE IF EXISTS Houses CASCADE;
 CREATE TABLE Houses (
   id            SERIAL PRIMARY KEY,
+  host_id       INTEGER REFERENCES Hosts (id) ON DELETE CASCADE,
   country_id    INTEGER REFERENCES CountryFee (country_id) ON DELETE CASCADE,
   address_extra VARCHAR(100) NOT NULL,
   house_name    VARCHAR(100) NOT NULL,
@@ -41,20 +48,6 @@ CREATE TABLE Houses (
   gps_longitude FLOAT        NOT NULL CHECK (gps_latitude >= -90 AND gps_latitude <= 90),
   gps_latitude  FLOAT        NOT NULL CHECK (gps_longitude >= -180 AND gps_longitude <= 180),
   UNIQUE (gps_latitude, gps_longitude, house_name)
-);
-
-DROP TABLE IF EXISTS Hosts CASCADE;
-CREATE TABLE Hosts (
-  id   SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL UNIQUE
-);
-
-DROP TABLE IF EXISTS HousesInHosts CASCADE;
-CREATE TABLE HousesInHosts (
-  id       SERIAL PRIMARY KEY,
-  host_id  INTEGER REFERENCES Hosts (id) ON DELETE CASCADE,
-  house_id INTEGER REFERENCES Houses (id) ON DELETE CASCADE,
-  UNIQUE (host_id, house_id)
 );
 
 DROP TABLE IF EXISTS Facilities CASCADE;
