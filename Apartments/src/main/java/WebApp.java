@@ -45,18 +45,27 @@ public class WebApp {
                 req.queryMap("beds").integerValue(),
                 req.queryMap("guests").integerValue()
         );
-        database.withVoidTransaction(tx -> {
-            String addCountryQuery = "INSERT INTO CountryFee (name, fee_percent) VALUES (?, 0) "
-                                        + "ON CONFLICT DO NOTHING;";
-            String getCountryIdQuery = "SELECT country_id FROM CountryFee WHERE name = ?";
-            String insertApartmentQuery =
-                    "INSERT INTO House (country_id, house_name, rooms_number, beds_number, max_residents) " +
-                            "VALUES (?, ?, ?, ?, ?);";
-            database.update(addCountryQuery, apartment.country);
-            int id = database.findAll(Integer.class, getCountryIdQuery, apartment.country).get(0);
-            database.update(insertApartmentQuery, id, apartment.name, apartment.roomsCnt, apartment.bedsCnt, apartment.guestsCnt);
+        boolean cascade = req.queryMap("cascade").booleanValue();
+        try {
+            database.withVoidTransaction(tx -> {
+                String addCountryQuery = "INSERT INTO CountryFee (name, fee_percent) VALUES (?, 0) "
+                        + "ON CONFLICT DO NOTHING;";
+                String getCountryIdQuery = "SELECT country_id FROM CountryFee WHERE name = ?";
+                String insertApartmentQuery =
+                        "INSERT INTO House (country_id, house_name, rooms_number, beds_number, max_residents) " +
+                                "VALUES (?, ?, ?, ?, ?);";
+                if (cascade) {
+                    database.update(addCountryQuery, apartment.country);
+                }
+                int id = database.findAll(Integer.class, getCountryIdQuery, apartment.country).get(0);
+                database.update(insertApartmentQuery, id, apartment.name, apartment.roomsCnt, apartment.bedsCnt, apartment.guestsCnt);
 
-        });
+            });
+        } catch (IndexOutOfBoundsException iex) {
+            iex.printStackTrace();
+            resp.status(500);
+            return "Transaction failed";
+        }
         resp.redirect("/apartment/all");
         return null;
     }
