@@ -131,3 +131,29 @@ CREATE TABLE Entertainmets (
   gps_latitude  FLOAT        NOT NULL CHECK (gps_longitude >= -180 AND gps_longitude <= 180),
   UNIQUE (gps_latitude, gps_longitude, name)
 );
+
+DELETE FROM HostComment;
+DELETE FROM UserComment;
+DELETE FROM CountryFee;
+DELETE FROM House;
+DELETE FROM Us3r;
+
+INSERT INTO Us3r VALUES (0, 'Stas', 'Belyaev', 'stasbelyaev96@gmail.com', '+79818512069');
+INSERT INTO Us3r VALUES (1, 'Misha', 'Nikonov', 'mishanikonov99@gmail.com', '+71488322282');
+INSERT INTO Us3r VALUES (2, 'Sanya', 'Markelov', 'sanyamarkelov90@gmail.com', '+77777777777');
+
+INSERT INTO CountryFee VALUES (0, 'Russia', 0.228);
+INSERT INTO CountryFee VALUES (1, 'Ukreich', 0.1488);
+INSERT INTO CountryFee VALUES (2, 'USA', 0.777);
+
+INSERT INTO House VALUES (0, 1, 2, 'John st.', 'dom mishi', 1, 1, 1, -77.0365298, 38.8976763);
+INSERT INTO House VALUES (1, 2, 1, 'Bandera st.', 'dom sani', 1, 1, 1, 46.0365298, 30.8976763);
+INSERT INTO House VALUES (2, 0, 0, 'Russialove st.', 'Dom stasa', 10, 10, 10, 0, 0);
+
+INSERT INTO UserComment VALUES (0, 0, 2, 'vse ploxo, misha', 1, 1, 1);
+INSERT INTO UserComment VALUES (1, 1, 0, 'vse horosho, sanya', 5, 5, 5);
+INSERT INTO UserComment VALUES (2, 2, 1, 'vse normalno, stas', 3, 2, 3);
+
+INSERT INTO HostComment VALUES (0, 0, 1, 'nenormalniy kakoi-to', 1);
+INSERT INTO HostComment VALUES (1, 1, 2, 'ny, takoe...', 3);
+INSERT INTO HostComment VALUES (2, 2, 0, 'normalniy kakoi-to', 5);

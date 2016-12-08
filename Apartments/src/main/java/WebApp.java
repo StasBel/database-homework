@@ -28,12 +28,19 @@ public class WebApp {
     }
 
     private static Object getAllApartments(Request req, Response resp) throws IOException, SQLException {
-        final Database database = Database.forDataSource(dataSource);
-        resp.type("text/plain");
-        String readQuery = "SELECT  H.house_name AS name, C.name AS country, H.rooms_number AS roomsCnt,"
-                + "H.beds_number AS bedsCnt, H.max_residents AS guestsCnt "
-                + "FROM House H JOIN CountryFee C ON H.country_id = C.country_id;";
-        return database.findAll(Apartment.class, readQuery).stream().map(Object::toString).collect(Collectors.joining("\n"));
+    final Database database = Database.forDataSource(dataSource);
+    resp.type("text/plain");
+        String rateSubQuery =
+                "WITH Rate AS ( "
+                +   "SELECT house_id, AVG(convenient_location_rate) AS location, AVG(cleanliness_rate) AS cleanliness, AVG(friendliness_rate) AS friendliness "
+                +   "FROM UserComment GROUP BY house_id)";
+        String readQuery = rateSubQuery +
+                "SELECT  H.house_name AS name, C.name AS country, H.rooms_number AS roomsCnt, "
+                + "H.beds_number AS bedsCnt, H.max_residents AS guestsCnt, R.location, R.cleanliness, R.friendliness "
+                + "FROM House H "
+                + "JOIN CountryFee C ON H.country_id = C.country_id "
+                + "LEFT JOIN Rate R ON H.id = R.house_id";
+        return database.findAll(HouseSummary.class, readQuery).stream().map(Object::toString).collect(Collectors.joining("\n\n"));
     }
 
     private static Object newApartment(Request req, Response resp) throws IOException, SQLException {
