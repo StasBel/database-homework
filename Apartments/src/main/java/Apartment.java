@@ -15,7 +15,7 @@ public class Apartment {
     public final Integer bedsCnt;
     public final Integer guestsCnt;
 
-    public Apartment(String name, String country, int roomsCnt, int bedsCnt, int guestsCnt) {
+    public Apartment(String name, String country, Integer roomsCnt, Integer bedsCnt, Integer guestsCnt) {
         this.name = name;
         this.country = country;
         this.roomsCnt = roomsCnt;

@@ -6,8 +6,8 @@ public class HouseSummary {
     public final Apartment apartment;
     public final Rate rate;
 
-    public HouseSummary(String name, String country, int roomsCnt, int bedsCnt,
-                        int guestsCnt, Float location, Float cleanliness, Float friendliness) {
+    public HouseSummary(String name, String country, Integer roomsCnt, Integer bedsCnt,
+                        Integer guestsCnt, Float location, Float cleanliness, Float friendliness) {
         apartment = new Apartment(name, country, roomsCnt, bedsCnt, guestsCnt);
         rate = new Rate(location, cleanliness, friendliness);
     }
